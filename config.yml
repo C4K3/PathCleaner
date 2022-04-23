@@ -1,0 +1,7 @@
+initWorlds: true
+
+# List of worlds the plugin is active on (will actually delete content from)
+active: []
+
+# Only delete chunks with inhabited time less than this (in seconds)
+inhabitedThreshold: 30

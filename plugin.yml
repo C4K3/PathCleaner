@@ -1,0 +1,6 @@
+name: PathCleaner
+main: net.simpvp.PathCleaner.PathCleaner
+version: 1
+api-version: 1.13
+author: simpvp.net
+description: Clean path trails
