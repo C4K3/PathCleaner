@@ -61,15 +61,12 @@ public class InteractListener implements Listener {
 		add_region(event.getClickedBlock());
 	}
 
-	/*
-	 * Removing this trigger, as we can easily compute it later.
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
 	public void onChunkUnload(ChunkUnloadEvent event) {
 		Chunk c = event.getChunk();
-		PathCleaner.instance.getLogger().info("Unload time " + c.getInhabitedTime());
+		//PathCleaner.instance.getLogger().info("Unload time " + c.getInhabitedTime());
 		if (c.getInhabitedTime() > PathCleaner.inhabited_threshold) {
 			add_region(c.getBlock(0, 0, 0));
 		}
 	}
-	*/
 }
