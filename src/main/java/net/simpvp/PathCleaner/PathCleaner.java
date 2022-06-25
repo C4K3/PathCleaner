@@ -50,14 +50,6 @@ public class PathCleaner extends JavaPlugin {
 			}.runTaskLater(this, 1L);
 
 			return;
-		} else {
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					Cleanup.run();
-
-				}
-			}.runTaskLater(this, 5L);
 		}
 
 		initialized = true;
@@ -72,7 +64,7 @@ public class PathCleaner extends JavaPlugin {
 		}
 
 		reloadConfig();
-		//Cleanup.run();
+		Cleanup.run();
 		SQLite.close();
 	}
 }

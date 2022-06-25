@@ -9,7 +9,6 @@ public class Region {
 	public String world;
 	public int x;
 	public int z;
-	public File path = null;
 	public World world_obj = null;
 
 	public Region(String world, int x, int z) {
@@ -18,17 +17,20 @@ public class Region {
 		this.z = z;
 	}
 
-	public Region(World world_obj, int x, int z, File path) {
+	public Region(World world_obj, int x, int z) {
 		this.world = world_obj.getName();
 		this.x = x;
 		this.z = z;
-		this.path = path;
 		this.world_obj = world_obj;
 	}
 
 	@Override
 	public String toString() {
 		return String.format("Region(%s %d %d)", this.world, this.x, this.z);
+	}
+
+	public String filename() {
+		return String.format("r.%d.%d.mca", this.x, this.z);
 	}
 
 	// Override equals and hashCode such that hashmaps don't care about the
