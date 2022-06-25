@@ -50,12 +50,22 @@ public class PathCleaner extends JavaPlugin {
 			}.runTaskLater(this, 1L);
 
 			return;
+		} else {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					Cleanup.run();
+
+				}
+			}.runTaskLater(this, 5L);
 		}
 
 		initialized = true;
 	}
 
 	public void onDisable() {
+		InteractListener.check_loaded_chunks();
+
 		if (!initialized) {
 			getLogger().severe("Initialized set to false, not running");
 			return;

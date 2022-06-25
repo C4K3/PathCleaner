@@ -4,4 +4,4 @@ initWorlds: true
 active: []
 
 # Only delete chunks with inhabited time less than this (in seconds)
-inhabitedThreshold: 30
+inhabitedThreshold: 45

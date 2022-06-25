@@ -1,6 +1,7 @@
 package net.simpvp.PathCleaner;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,8 +11,11 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Cleanup {
+
+	public static HashSet<Region> check = null;
 
 	public static void run() {
 		HashSet<Region> safe = SQLite.get_safe_regions();
@@ -20,13 +24,19 @@ public class Cleanup {
 		}
 		long safe_count = safe.size();
 
-		for (World w : PathCleaner.instance.getServer().getWorlds()) {
+		ArrayList<World> active_worlds = new ArrayList<>();
+		for (String w : PathCleaner.instance.getConfig().getStringList("active")) {
+			PathCleaner.instance.getLogger().info(String.format("Running cleanup on world %s", w));
+			active_worlds.add(PathCleaner.instance.getServer().getWorld(w));
+		}
+
+		for (World w : active_worlds) {
 			w.save();
 		}
 
 		// Start with all regions saved to disk
 		HashSet<Region> regions = new HashSet<>();
-		for (World w : PathCleaner.instance.getServer().getWorlds()) {
+		for (World w : active_worlds) {
 			get_regions(regions, w);
 		}
 		long total_region_count = regions.size();
@@ -38,15 +48,64 @@ public class Cleanup {
 
 		// Now left over only with regions not marked as safe, and that
 		// do not have a high inhabited time
-		//PathCleaner.instance.getLogger().info(String.format("Evaluating %d regions for deletion", regions.size()));
 		PathCleaner.instance.getLogger().info(String.format("Found %d total regions, %d safe regions, %d marked for deletion ", total_region_count, safe_count, regions.size()));
 
 		// Ensure we unload all worlds before we start editing them
-		for (World w : PathCleaner.instance.getServer().getWorlds()) {
-			PathCleaner.instance.getServer().unloadWorld(w, true);
-		}
+		//for (World w : active_worlds) {
+		//	PathCleaner.instance.getServer().unloadWorld(w, true);
+		//}
+
+		check = regions;
+		
+		check_regions();
+
+		//PathCleaner.instance.getLogger().info("Cleanup complete, disabling 'active'");
+		//PathCleaner.instance.getConfig().set("active", new ArrayList<>());
+		//PathCleaner.instance.saveConfig();
 	}
 
+	private static void check_regions() {
+		PathCleaner.instance.getLogger().info(String.format("Need to check %d regions", check.size()));
+
+		for (int i = 0; i < 10; i++) {
+			if (check.size() == 0) {
+				PathCleaner.instance.getLogger().info("All done checking regions");
+				return;
+			}
+
+			Region r = check.iterator().next();
+
+			PathCleaner.instance.getLogger().info(String.format("Checking region %s", r));
+			int min_x = r.x << 5;
+			int min_z = r.z << 5;
+
+			int max_x = min_x + 32;
+			int max_z = min_z + 32;
+
+			for (int x = min_x; x < max_x; x++) {
+				for (int z = min_z; z < max_z; z++) {
+					r.world_obj.loadChunk(x, z, false);
+				}
+			}
+
+			for (int x = min_x; x < max_x; x++) {
+				for (int z = min_z; z < max_z; z++) {
+					r.world_obj.unloadChunkRequest(x, z);
+				}
+			}
+
+			check.remove(r);
+		}
+
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				check_regions();
+
+			}
+		}.runTaskLater(PathCleaner.instance, 1L);
+	}
 
 	private static Pattern REGION_FILE_REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca$");
 
@@ -110,9 +169,6 @@ public class Cleanup {
 			regions.add(r);
 			//PathCleaner.instance.getLogger().info(String.format("Found region file %s %s %s %s", f.toString(), f.getName(), x, z));
 		}
-
-		Region r = new Region(world, 52, 30, new File(""));
-		regions.add(r);
 	}
 
 	/**

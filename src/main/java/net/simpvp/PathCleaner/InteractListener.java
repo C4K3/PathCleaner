@@ -3,6 +3,7 @@ package net.simpvp.PathCleaner;
 import java.util.HashSet;
 
 import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,7 +22,7 @@ public class InteractListener implements Listener {
 
 	private static HashSet<Region> seen_regions = new HashSet<>();
 
-	private void add_region(Block block) {
+	private static void add_region(Block block) {
 		String world = block.getWorld().getName();
 		int x = block.getX() >> 9;
 		int z = block.getZ() >> 9;
@@ -32,7 +33,7 @@ public class InteractListener implements Listener {
 			return;
 		}
 
-		//PathCleaner.instance.getLogger().info(String.format("Setting safe region %s", r.toString()));
+		PathCleaner.instance.getLogger().info(String.format("Setting safe region %s", r.toString()));
 
 		if (!SQLite.insert_safe_region(r)) {
 			PathCleaner.initialized = false;
@@ -67,6 +68,16 @@ public class InteractListener implements Listener {
 		//PathCleaner.instance.getLogger().info("Unload time " + c.getInhabitedTime());
 		if (c.getInhabitedTime() > PathCleaner.inhabited_threshold) {
 			add_region(c.getBlock(0, 0, 0));
+		}
+	}
+
+	public static void check_loaded_chunks() {
+		for (World w : PathCleaner.instance.getServer().getWorlds()) {
+			for (Chunk c : w.getLoadedChunks()) {
+				if (c.getInhabitedTime() > PathCleaner.inhabited_threshold) {
+					add_region(c.getBlock(0, 0, 0));
+				}
+			}
 		}
 	}
 }
