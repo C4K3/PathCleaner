@@ -33,7 +33,7 @@ public class InteractListener implements Listener {
 			return;
 		}
 
-		PathCleaner.instance.getLogger().info(String.format("Setting safe region %s", r.toString()));
+		//PathCleaner.instance.getLogger().info(String.format("Setting safe region %s", r.toString()));
 
 		if (!SQLite.insert_safe_region(r)) {
 			PathCleaner.initialized = false;
